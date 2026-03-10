@@ -5,11 +5,23 @@ import { createClient } from "@/lib/supabase/server";
 import { safeAction } from "./safe-action";
 import { eventSchema, type EventFormValues } from "@/lib/validations/events";
 import type { SportEvent, ActionResult } from "@/lib/types";
+import {
+  createMockEvent,
+  deleteMockEvent,
+  getMockEventById,
+  listMockEvents,
+  updateMockEvent,
+} from "@/lib/e2e/mock-db";
+import { getE2ESessionEmail, isE2EMockEnabled } from "@/lib/e2e/session";
 
 export async function getEvents(
   search?: string,
   sportFilter?: string
 ): Promise<ActionResult<SportEvent[]>> {
+  if (isE2EMockEnabled()) {
+    return safeAction(async () => listMockEvents(search, sportFilter));
+  }
+
   return safeAction(async () => {
     const supabase = await createClient();
 
@@ -35,6 +47,14 @@ export async function getEvents(
 export async function getEvent(
   id: string
 ): Promise<ActionResult<SportEvent>> {
+  if (isE2EMockEnabled()) {
+    return safeAction(async () => {
+      const event = await getMockEventById(id);
+      if (!event) throw new Error("Event not found");
+      return event;
+    });
+  }
+
   return safeAction(async () => {
     const supabase = await createClient();
     const { data, error } = await supabase
@@ -51,6 +71,18 @@ export async function getEvent(
 export async function createEvent(
   values: EventFormValues
 ): Promise<ActionResult<SportEvent>> {
+  if (isE2EMockEnabled()) {
+    return safeAction(async () => {
+      const parsed = eventSchema.parse(values);
+      const sessionEmail = await getE2ESessionEmail();
+      if (!sessionEmail) throw new Error("Not authenticated");
+
+      const event = await createMockEvent(sessionEmail, parsed);
+      revalidatePath("/dashboard");
+      return event;
+    });
+  }
+
   return safeAction(async () => {
     const parsed = eventSchema.parse(values);
     const supabase = await createClient();
@@ -108,12 +140,26 @@ export async function updateEvent(
   id: string,
   values: EventFormValues
 ): Promise<ActionResult<SportEvent>> {
+  if (isE2EMockEnabled()) {
+    return safeAction(async () => {
+      const parsed = eventSchema.parse(values);
+      const event = await updateMockEvent(id, parsed);
+      revalidatePath("/dashboard");
+      return event;
+    });
+  }
+
   return safeAction(async () => {
     const parsed = eventSchema.parse(values);
     const supabase = await createClient();
 
-    // Update event
-    const { error: eventError } = await supabase
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) throw new Error("Not authenticated");
+
+    // Ownership enforced atomically in the WHERE clause
+    const { data: updated, error: eventError } = await supabase
       .from("events")
       .update({
         name: parsed.name,
@@ -121,9 +167,14 @@ export async function updateEvent(
         date_time: parsed.date_time,
         description: parsed.description || null,
       })
-      .eq("id", id);
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .select("id")
+      .single();
 
-    if (eventError) throw new Error(eventError.message);
+    if (eventError || !updated) {
+      throw new Error("Not authorized to modify this event");
+    }
 
     // Delete old venues and insert new ones
     const { error: deleteError } = await supabase
@@ -164,11 +215,34 @@ export async function updateEvent(
 export async function deleteEvent(
   id: string
 ): Promise<ActionResult<boolean>> {
+  if (isE2EMockEnabled()) {
+    return safeAction(async () => {
+      await deleteMockEvent(id);
+      revalidatePath("/dashboard");
+      return true;
+    });
+  }
+
   return safeAction(async () => {
     const supabase = await createClient();
-    const { error } = await supabase.from("events").delete().eq("id", id);
 
-    if (error) throw new Error(error.message);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) throw new Error("Not authenticated");
+
+    // Ownership enforced atomically in the WHERE clause
+    const { data: deleted, error } = await supabase
+      .from("events")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .select("id")
+      .single();
+
+    if (error || !deleted) {
+      throw new Error("Not authorized to delete this event");
+    }
 
     revalidatePath("/dashboard");
     return true;

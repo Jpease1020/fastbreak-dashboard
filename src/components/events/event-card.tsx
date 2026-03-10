@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { Calendar, MapPin, Pencil, Trash2 } from "lucide-react";
+import { Calendar, Loader2, MapPin, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -26,12 +26,15 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { deleteEvent } from "@/lib/actions/events";
+import { SPORT_COLORS } from "@/lib/constants/sport-colors";
 import type { SportEvent } from "@/lib/types";
-import { Loader2 } from "lucide-react";
 
 export function EventCard({ event }: { event: SportEvent }) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const sportColor =
+    SPORT_COLORS[event.sport_type] ?? SPORT_COLORS["Other"];
 
   async function handleDelete() {
     setIsDeleting(true);
@@ -41,38 +44,46 @@ export function EventCard({ event }: { event: SportEvent }) {
       setIsDeleting(false);
     } else {
       toast.success("Event deleted successfully");
+      setIsDeleting(false);
       setDialogOpen(false);
     }
   }
 
   return (
-    <Card className="flex flex-col">
-      <CardHeader>
+    <Card className="group flex flex-col border-border transition-all duration-300 hover:border-primary/40">
+      <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-2">
-          <div className="space-y-1">
-            <CardTitle className="line-clamp-1">{event.name}</CardTitle>
-            <CardDescription className="flex items-center gap-1.5">
-              <Calendar className="h-3.5 w-3.5" />
+          <div className="min-w-0 space-y-1.5">
+            <CardTitle className="line-clamp-1 text-base">
+              {event.name}
+            </CardTitle>
+            <CardDescription className="flex items-center gap-1.5 text-xs">
+              <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
               {format(new Date(event.date_time), "MMM d, yyyy 'at' h:mm a")}
             </CardDescription>
           </div>
-          <Badge variant="secondary">{event.sport_type}</Badge>
+          <Badge
+            variant="outline"
+            className={`shrink-0 border text-xs font-medium ${sportColor}`}
+          >
+            {event.sport_type}
+          </Badge>
         </div>
       </CardHeader>
-      <CardContent className="flex-1">
+      <CardContent className="flex-1 pb-3">
         {event.description && (
-          <p className="mb-3 line-clamp-2 text-sm text-muted-foreground">
+          <p className="mb-3 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
             {event.description}
           </p>
         )}
         {event.event_venues.length > 0 && (
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             {event.event_venues.map((venue) => (
               <div
                 key={venue.id}
                 className="flex items-center gap-1.5 text-sm text-muted-foreground"
               >
-                <MapPin className="h-3.5 w-3.5 shrink-0" />
+                <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                 <span className="line-clamp-1">
                   {venue.name}
                   {venue.address && ` — ${venue.address}`}
@@ -82,15 +93,24 @@ export function EventCard({ event }: { event: SportEvent }) {
           </div>
         )}
       </CardContent>
-      <CardFooter className="gap-2">
-        <Button variant="outline" size="sm" className="flex-1" render={<Link href={`/dashboard/events/${event.id}/edit`} />}>
+      <CardFooter className="gap-2 border-t border-border/50 pt-3">
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex-1"
+          render={<Link href={`/dashboard/events/${event.id}/edit`} />}
+        >
           <Pencil className="mr-2 h-3.5 w-3.5" />
           Edit
         </Button>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger
             render={
-              <Button variant="outline" size="sm" className="flex-1 text-destructive hover:text-destructive" />
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 text-destructive hover:text-destructive"
+              />
             }
           >
             <Trash2 className="mr-2 h-3.5 w-3.5" />

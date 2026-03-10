@@ -10,7 +10,7 @@ export type SportEvent = {
   id: string;
   user_id: string;
   name: string;
-  sport_type: string;
+  sport_type: SportType;
   date_time: string;
   description: string | null;
   created_at: string;

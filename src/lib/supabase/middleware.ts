@@ -1,7 +1,39 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import {
+  getE2ESessionEmailFromRequest,
+  isE2EMockEnabled,
+} from "@/lib/e2e/session";
 
 export async function updateSession(request: NextRequest) {
+  if (isE2EMockEnabled()) {
+    const isAuthPage =
+      request.nextUrl.pathname.startsWith("/login") ||
+      request.nextUrl.pathname.startsWith("/signup");
+    const sessionEmail = getE2ESessionEmailFromRequest(request);
+
+    if (
+      !sessionEmail &&
+      !isAuthPage &&
+      !request.nextUrl.pathname.startsWith("/auth/callback") &&
+      !request.nextUrl.pathname.startsWith("/api/e2e/")
+    ) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      return NextResponse.redirect(url);
+    }
+
+    if (sessionEmail && isAuthPage) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      return NextResponse.redirect(url);
+    }
+
+    return NextResponse.next({
+      request,
+    });
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   });

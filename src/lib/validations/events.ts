@@ -11,7 +11,10 @@ export const eventSchema = z.object({
   sport_type: z.enum([...SPORT_TYPES], {
     message: "Please select a sport type",
   }),
-  date_time: z.string().min(1, "Date and time is required"),
+  date_time: z.string().min(1, "Date and time is required").refine(
+    (val) => !isNaN(Date.parse(val)),
+    "Please enter a valid date and time"
+  ),
   description: z.string().optional(),
   venues: z
     .array(venueSchema)
