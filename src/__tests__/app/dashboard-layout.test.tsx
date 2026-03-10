@@ -43,7 +43,7 @@ describe("DashboardLayout", () => {
     mockCreateClient.mockResolvedValue({
       auth: {
         getUser: vi.fn().mockResolvedValue({
-          data: { user: { email: "coach@fastbreak.dev" } },
+          data: { user: { email: "coach@example.com" } },
         }),
       },
     });
@@ -55,7 +55,7 @@ describe("DashboardLayout", () => {
     );
 
     expect(screen.getByTestId("header-email")).toHaveTextContent(
-      "coach@fastbreak.dev"
+      "coach@example.com"
     );
     expect(screen.getByText("Protected content")).toBeInTheDocument();
   });

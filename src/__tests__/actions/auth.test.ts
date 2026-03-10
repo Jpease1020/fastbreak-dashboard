@@ -40,10 +40,10 @@ describe("auth actions", () => {
       auth: { signInWithPassword },
     });
 
-    await login({ email: "coach@fastbreak.dev", password: "password123" });
+    await login({ email: "coach@example.com", password: "password123" });
 
     expect(signInWithPassword).toHaveBeenCalledWith({
-      email: "coach@fastbreak.dev",
+      email: "coach@example.com",
       password: "password123",
     });
     expect(mockRevalidatePath).toHaveBeenCalledWith("/", "layout");
@@ -60,7 +60,7 @@ describe("auth actions", () => {
     });
 
     await expect(
-      login({ email: "coach@fastbreak.dev", password: "badpass" })
+      login({ email: "coach@example.com", password: "badpass" })
     ).resolves.toEqual({
       data: null,
       error: "Something went wrong. Please try again.",
@@ -76,10 +76,10 @@ describe("auth actions", () => {
       auth: { signUp },
     });
 
-    await signup({ email: "new@fastbreak.dev", password: "password123" });
+    await signup({ email: "new@example.com", password: "password123" });
 
     expect(signUp).toHaveBeenCalledWith({
-      email: "new@fastbreak.dev",
+      email: "new@example.com",
       password: "password123",
     });
     expect(mockRevalidatePath).toHaveBeenCalledWith("/", "layout");

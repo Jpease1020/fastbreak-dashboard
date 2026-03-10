@@ -6,19 +6,19 @@ test("redirects unauthenticated users to login, logs in, and logs out", async ({
   page,
 }) => {
   await setupMockState(page, {
-    users: [{ email: "coach@fastbreak.dev", password: "password123" }],
+    users: [{ email: "coach@example.com", password: "password123" }],
     sessionEmail: null,
   });
 
   await page.goto("/dashboard");
   await expect(page).toHaveURL(/\/login$/);
 
-  await page.getByLabel("Email").fill("coach@fastbreak.dev");
+  await page.getByLabel("Email").fill("coach@example.com");
   await page.getByLabel("Password").fill("password123");
   await page.getByRole("button", { name: /sign in/i }).click();
 
   await expect(page).toHaveURL(/\/dashboard$/);
-  await expect(page.getByText("coach@fastbreak.dev")).toBeVisible();
+  await expect(page.getByText("coach@example.com")).toBeVisible();
   await expect(page.getByText("No events yet")).toBeVisible();
 
   await page.getByRole("button", { name: /sign out/i }).click();
@@ -36,11 +36,11 @@ test("signs up a new user and lands on the protected dashboard", async ({
   });
 
   await page.goto("/signup");
-  await page.getByLabel("Email").fill("new-user@fastbreak.dev");
+  await page.getByLabel("Email").fill("new-user@example.com");
   await page.getByLabel(/^Password$/).fill("password123");
   await page.getByLabel("Confirm Password").fill("password123");
   await page.getByRole("button", { name: /create account/i }).click();
 
   await expect(page).toHaveURL(/\/dashboard$/);
-  await expect(page.getByText("new-user@fastbreak.dev")).toBeVisible();
+  await expect(page.getByText("new-user@example.com")).toBeVisible();
 });

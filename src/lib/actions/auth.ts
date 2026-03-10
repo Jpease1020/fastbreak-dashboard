@@ -74,7 +74,7 @@ export async function signup(formData: { email: string; password: string }) {
 
 export async function signInWithGoogle() {
   if (isE2EMockEnabled()) {
-    const email = "google-user@fastbreak.dev";
+    const email = "google-user@example.com";
     await signupMockUser({
       email,
       password: "google-oauth-user",

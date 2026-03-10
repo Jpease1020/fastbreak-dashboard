@@ -20,7 +20,7 @@ describe("SignupForm", () => {
     const user = userEvent.setup();
     render(<SignupForm />);
 
-    await user.type(screen.getByLabelText(/^email$/i), "coach@fastbreak.dev");
+    await user.type(screen.getByLabelText(/^email$/i), "coach@example.com");
     await user.type(screen.getByLabelText(/^password$/i), "password123");
     await user.type(
       screen.getByLabelText(/confirm password/i),
@@ -37,7 +37,7 @@ describe("SignupForm", () => {
     mockSignup.mockResolvedValue({ data: true, error: null });
     render(<SignupForm />);
 
-    await user.type(screen.getByLabelText(/^email$/i), "coach@fastbreak.dev");
+    await user.type(screen.getByLabelText(/^email$/i), "coach@example.com");
     await user.type(screen.getByLabelText(/^password$/i), "password123");
     await user.type(
       screen.getByLabelText(/confirm password/i),
@@ -47,7 +47,7 @@ describe("SignupForm", () => {
 
     await waitFor(() => {
       expect(mockSignup).toHaveBeenCalledWith({
-        email: "coach@fastbreak.dev",
+        email: "coach@example.com",
         password: "password123",
       });
     });
@@ -66,7 +66,7 @@ describe("SignupForm", () => {
     mockSignup.mockReturnValueOnce(pendingSignup);
     render(<SignupForm />);
 
-    await user.type(screen.getByLabelText(/^email$/i), "coach@fastbreak.dev");
+    await user.type(screen.getByLabelText(/^email$/i), "coach@example.com");
     await user.type(screen.getByLabelText(/^password$/i), "password123");
     await user.type(
       screen.getByLabelText(/confirm password/i),
@@ -91,7 +91,7 @@ describe("SignupForm", () => {
     mockSignup.mockResolvedValue({ data: null, error: "Email already registered" });
     render(<SignupForm />);
 
-    await user.type(screen.getByLabelText(/^email$/i), "coach@fastbreak.dev");
+    await user.type(screen.getByLabelText(/^email$/i), "coach@example.com");
     await user.type(screen.getByLabelText(/^password$/i), "password123");
     await user.type(
       screen.getByLabelText(/confirm password/i),

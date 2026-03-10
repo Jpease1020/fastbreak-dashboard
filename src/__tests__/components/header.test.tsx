@@ -13,7 +13,7 @@ vi.mock("@/lib/actions/auth", () => ({
 
 describe("Header", () => {
   it("renders navigation links and the signed-in email", () => {
-    render(<Header email="coach@fastbreak.dev" />);
+    render(<Header email="coach@example.com" />);
 
     expect(screen.getByRole("link", { name: /fastbreak/i })).toHaveAttribute(
       "href",
@@ -23,12 +23,12 @@ describe("Header", () => {
       "href",
       "/dashboard/events/new"
     );
-    expect(screen.getByText("coach@fastbreak.dev")).toBeInTheDocument();
+    expect(screen.getByText("coach@example.com")).toBeInTheDocument();
   });
 
   it("submits the logout action from the sign out form", async () => {
     mockLogout.mockResolvedValue(undefined);
-    render(<Header email="coach@fastbreak.dev" />);
+    render(<Header email="coach@example.com" />);
 
     const button = screen.getByRole("button", { name: /sign out/i });
     fireEvent.submit(button.closest("form")!);

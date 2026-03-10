@@ -6,8 +6,8 @@ test("creates, edits, and deletes an event with multiple venues", async ({
   page,
 }) => {
   await setupMockState(page, {
-    users: [{ email: "coach@fastbreak.dev", password: "password123" }],
-    sessionEmail: "coach@fastbreak.dev",
+    users: [{ email: "coach@example.com", password: "password123" }],
+    sessionEmail: "coach@example.com",
   });
 
   await page.goto("/dashboard");

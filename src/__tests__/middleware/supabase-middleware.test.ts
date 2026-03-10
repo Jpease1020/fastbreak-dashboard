@@ -49,7 +49,7 @@ describe("updateSession", () => {
     mockCreateServerClient.mockReturnValue({
       auth: {
         getUser: vi.fn().mockResolvedValue({
-          data: { user: { id: "user-1", email: "coach@fastbreak.dev" } },
+          data: { user: { id: "user-1", email: "coach@example.com" } },
         }),
       },
     });
@@ -73,7 +73,7 @@ describe("updateSession", () => {
     mockCreateServerClient.mockReturnValue({
       auth: {
         getUser: vi.fn().mockResolvedValue({
-          data: { user: { id: "user-1", email: "coach@fastbreak.dev" } },
+          data: { user: { id: "user-1", email: "coach@example.com" } },
         }),
       },
     });

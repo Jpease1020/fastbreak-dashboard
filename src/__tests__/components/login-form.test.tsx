@@ -34,13 +34,13 @@ describe("LoginForm", () => {
     mockLogin.mockResolvedValue({ data: true, error: null });
     render(<LoginForm />);
 
-    await user.type(screen.getByLabelText(/email/i), "coach@fastbreak.dev");
+    await user.type(screen.getByLabelText(/email/i), "coach@example.com");
     await user.type(screen.getByLabelText(/password/i), "password123");
     await user.click(screen.getByRole("button", { name: /sign in/i }));
 
     await waitFor(() => {
       expect(mockLogin).toHaveBeenCalledWith({
-        email: "coach@fastbreak.dev",
+        email: "coach@example.com",
         password: "password123",
       });
     });
@@ -55,7 +55,7 @@ describe("LoginForm", () => {
     mockLogin.mockReturnValueOnce(pendingLogin);
     render(<LoginForm />);
 
-    await user.type(screen.getByLabelText(/email/i), "coach@fastbreak.dev");
+    await user.type(screen.getByLabelText(/email/i), "coach@example.com");
     await user.type(screen.getByLabelText(/password/i), "password123");
     await user.click(screen.getByRole("button", { name: /sign in/i }));
 
@@ -74,7 +74,7 @@ describe("LoginForm", () => {
     mockLogin.mockResolvedValue({ data: null, error: "Invalid login credentials" });
     render(<LoginForm />);
 
-    await user.type(screen.getByLabelText(/email/i), "coach@fastbreak.dev");
+    await user.type(screen.getByLabelText(/email/i), "coach@example.com");
     await user.type(screen.getByLabelText(/password/i), "password123");
     await user.click(screen.getByRole("button", { name: /sign in/i }));
 
