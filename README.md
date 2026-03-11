@@ -9,10 +9,10 @@ Repo: [https://github.com/Jpease1020/fastbreak-dashboard]
 
 Small event management app built for the Fastbreak coding exercise.
 
-The goal of the exercise was not to build a large feature set but to make a few clean architectural decisions appropriate for a small application. I intentionally kept the architecture simple: keep data access on the server, enforce ownership at the database boundary, and avoid adding infrastructure that a project of this size does not need.
+The goal of the exercise was to make a few clean architectural decisions appropriate for a small application. I structred the app keeping data access on the server, enforcing ownership close to the the database, and avoid adding unneccessary infrastructure that a project of this size doesn't need.
 
 Users can:
-- sign up / log in (email or Google)
+- sign up/log in (email or Google)
 - create, edit, and delete events
 - attach multiple venues to an event
 - search and filter events from the dashboard
@@ -20,17 +20,19 @@ Users can:
 ## Tech Stack
 - Next.js 16 (App Router)
 - TypeScript
-- Supabase (DB + Auth)
-- Tailwind + shadcn/ui
-- React Hook Form + Zod
-- Vitest + Playwright
+- Supabase (DB and Auth)
+- Tailwind, shadcn/ui
+- React Hook Form 
+- Zod validation
+- Vitest, Playwright
 
 ## Architecture
 
 The app follows a simple flow: UI -> Server Actions -> Supabase
+
 The client is responsible for UI state and interaction. The server is responsible for validation authorization, and persistence.
 
-The dashboard shows all events from all users, but edit and delete buttons only appear on events the user owns. The edit page also checks ownership server-side — navigating to someone else's event URL returns a 404. So there are two layers: the UI hides controls you can't use, and the server rejects mutations you're not authorized for.
+The dashboard shows all events from all users, but edit and delete buttons only appear on events the user owns. The edit page also checks ownership server-side. Navigating to someone else's event URL returns a 404. There are two layers, the UI hides controls you can't use, and the server rejects mutations you're not authorized for.
 
 ### Key choices:
 
