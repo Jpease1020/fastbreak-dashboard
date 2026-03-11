@@ -1,36 +1,105 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Fastbreak Event Dashboard
 
-## Getting Started
+Built as part of the Fastbreak engineering interview exercise.
 
-First, run the development server:
+Live Url: [https://fastbreak-dashboard-psi.vercel.app]
+Repo: [https://github.com/Jpease1020/fastbreak-dashboard]
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Overview
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Small event management app built for the Fastbreak coding exercise.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The goal of the exercise was not to build a large feature set but to make a few clean architectural decisions appropriate for a small application. I intentionally kept the architecture simple: keep data access on the server, enforce ownership at the database boundary, and avoid adding infrastructure that a project of this size does not need.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Users can:
+- sign up / log in (email or Google)
+- create, edit, and delete events
+- attach multiple venues to an event
+- search and filter events from the dashboard
 
-## Learn More
+## Tech Stack
+- Next.js 16 (App Router)
+- TypeScript
+- Supabase (DB + Auth)
+- Tailwind + shadcn/ui
+- React Hook Form + Zod
+- Vitest + Playwright
 
-To learn more about Next.js, take a look at the following resources:
+## Architecture
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The app follows a simple flow: UI -> Server Actions -> Supabase
+The client is responsible for UI state and interaction. The server is responsible for validation authorization, and persistence.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The dashboard shows all events from all users, but edit and delete buttons only appear on events the user owns. The edit page also checks ownership server-side — navigating to someone else's event URL returns a 404. So there are two layers: the UI hides controls you can't use, and the server rejects mutations you're not authorized for.
 
-## Deploy on Vercel
+### Key choices:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Server Actions instead of API routes
+All mutations (auth + event CRUD) run through Server Actions. This keeps mutation logic on the server without building a separate API layer.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Supabase access stays server-side
+Client components never directly talk to the database. This keeps auth checks and persistence logic centralized.
+
+- Consistent action pattern
+All actions use a small safeAction() wrapper that standardizes error handling and return types.
+
+- Filtering happens in the database
+Search and sport filters live in the URL and trigger a server-side query rather than filtering in client state.
+
+- Validation
+Zod validation runs both client-side (UX) and server-side (actual trust boundary).
+
+- URL-driven filtering
+Search/filter state lives in the URL so it survives refresh and stays shareable.
+
+
+## Data Model
+
+Two main tables:
+
+events
+- id
+- user_id
+- name
+- sport_type
+- date_time
+- description
+
+event_venues
+- id
+- event_id
+- name
+- address
+
+Venues are modeled separately so events can support a dynamic list of locations.
+
+## Trade-offs
+
+- Venue updates
+One thing requiring consideration was how to handle multiple venues during edits. Instead of diffing rows, I chose to delete existing venues and reinsert the new set. For this scale of application that keeps the logic simpler and avoids partial update edge cases.
+
+- Shared dashboard vs. per-user view 
+I chose to show all events to all users (the challenge says "display list of all sports events") but scope mutation controls to the owner. This means the dashboard works as a read-only feed for discovery, while edit/delete are gated at both the UI level (buttons hidden) and the server level (atomic user_id check in the WHERE clause). If per-user scoping were needed, it's a one-line change to add .eq("user_id", user.id) to the getEvents query.
+
+## What I Would Improve Next
+
+If this were moving beyond a coding exercise I would:
+- add a real Supabase integration test environment
+- document and harden row-level security policies
+- add better server-side logging for failed mutations
+- extract domain logic into a service layer if the app grew
+
+For this challenge I focused on keeping the architecture simple and predictable rather than over-engineering it.
+
+## Run Locally:
+Install dependencies and run the dev server:
+- Create .env.local:
+- npm install
+- npm run dev
+
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+
+## Tests:
+npm run test
+npm run test:e2e

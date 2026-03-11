@@ -1,12 +1,17 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { mockGetEvents } = vi.hoisted(() => ({
+const { mockGetEvents, mockCreateClient } = vi.hoisted(() => ({
   mockGetEvents: vi.fn(),
+  mockCreateClient: vi.fn(),
 }));
 
 vi.mock("@/lib/actions/events", () => ({
   getEvents: mockGetEvents,
+}));
+
+vi.mock("@/lib/supabase/server", () => ({
+  createClient: mockCreateClient,
 }));
 
 vi.mock("@/components/events/search-filter-bar", () => ({
@@ -22,6 +27,16 @@ vi.mock("@/components/events/event-card", () => ({
 import DashboardPage from "@/app/dashboard/page";
 
 describe("DashboardPage", () => {
+  beforeEach(() => {
+    mockCreateClient.mockResolvedValue({
+      auth: {
+        getUser: vi.fn().mockResolvedValue({
+          data: { user: { id: "current-user" } },
+        }),
+      },
+    });
+  });
+
   it("renders fetched events and the total count", async () => {
     mockGetEvents.mockResolvedValue({
       data: [

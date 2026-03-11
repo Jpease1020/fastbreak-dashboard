@@ -29,7 +29,13 @@ import { deleteEvent } from "@/lib/actions/events";
 import { SPORT_COLORS } from "@/lib/constants/sport-colors";
 import type { SportEvent } from "@/lib/types";
 
-export function EventCard({ event }: { event: SportEvent }) {
+export function EventCard({
+  event,
+  isOwner,
+}: {
+  event: SportEvent;
+  isOwner: boolean;
+}) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -93,59 +99,61 @@ export function EventCard({ event }: { event: SportEvent }) {
           </div>
         )}
       </CardContent>
-      <CardFooter className="gap-2 border-t border-border/50 pt-3">
-        <Button
-          variant="outline"
-          size="sm"
-          className="flex-1"
-          render={<Link href={`/dashboard/events/${event.id}/edit`} />}
-        >
-          <Pencil className="mr-2 h-3.5 w-3.5" />
-          Edit
-        </Button>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger
-            render={
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-1 text-destructive hover:text-destructive"
-              />
-            }
+      {isOwner && (
+        <CardFooter className="gap-2 border-t border-border/50 pt-3">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1"
+            render={<Link href={`/dashboard/events/${event.id}/edit`} />}
           >
-            <Trash2 className="mr-2 h-3.5 w-3.5" />
-            Delete
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Delete event</DialogTitle>
-              <DialogDescription>
-                Are you sure you want to delete &quot;{event.name}&quot;? This
-                action cannot be undone.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setDialogOpen(false)}
-                disabled={isDeleting}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={handleDelete}
-                disabled={isDeleting}
-              >
-                {isDeleting && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                Delete
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </CardFooter>
+            <Pencil className="mr-2 h-3.5 w-3.5" />
+            Edit
+          </Button>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger
+              render={
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 text-destructive hover:text-destructive"
+                />
+              }
+            >
+              <Trash2 className="mr-2 h-3.5 w-3.5" />
+              Delete
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Delete event</DialogTitle>
+                <DialogDescription>
+                  Are you sure you want to delete &quot;{event.name}&quot;? This
+                  action cannot be undone.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setDialogOpen(false)}
+                  disabled={isDeleting}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                >
+                  {isDeleting && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  Delete
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </CardFooter>
+      )}
     </Card>
   );
 }

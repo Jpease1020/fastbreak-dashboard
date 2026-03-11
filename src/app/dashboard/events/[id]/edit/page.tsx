@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { EventForm } from "@/components/events/event-form";
 import { getEvent } from "@/lib/actions/events";
+import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 
 export default async function EditEventPage({
@@ -15,6 +16,15 @@ export default async function EditEventPage({
   const result = await getEvent(id);
 
   if (result.error || !result.data) {
+    notFound();
+  }
+
+  // Only the event owner can access the edit page
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (result.data.user_id !== user?.id) {
     notFound();
   }
 

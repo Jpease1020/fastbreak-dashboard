@@ -36,7 +36,7 @@ const mockEvent: SportEvent = {
 
 describe("EventCard", () => {
   it("renders event name, formatted date, sport badge, description, and venue", () => {
-    render(<EventCard event={mockEvent} />);
+    render(<EventCard event={mockEvent} isOwner={true} />);
 
     expect(screen.getByText("Championship Game")).toBeInTheDocument();
     expect(screen.getByText("Basketball")).toBeInTheDocument();
@@ -48,7 +48,7 @@ describe("EventCard", () => {
   });
 
   it("links to the edit page for the event", () => {
-    render(<EventCard event={mockEvent} />);
+    render(<EventCard event={mockEvent} isOwner={true} />);
 
     // Base UI Button with render={<Link>} produces an <a> with role="button"
     const editButton = screen.getByRole("button", { name: /edit/i });
@@ -57,7 +57,7 @@ describe("EventCard", () => {
 
   it("opens the confirmation dialog before deleting", async () => {
     const user = userEvent.setup();
-    render(<EventCard event={mockEvent} />);
+    render(<EventCard event={mockEvent} isOwner={true} />);
 
     await user.click(screen.getByRole("button", { name: /^delete$/i }));
 
@@ -71,7 +71,7 @@ describe("EventCard", () => {
   it("deletes the event, shows success feedback, and closes the dialog", async () => {
     const user = userEvent.setup();
     mockDeleteEvent.mockResolvedValue({ data: true, error: null });
-    render(<EventCard event={mockEvent} />);
+    render(<EventCard event={mockEvent} isOwner={true} />);
 
     await user.click(screen.getByRole("button", { name: /^delete$/i }));
     const dialog = (await screen.findByText("Delete event")).closest(
@@ -89,13 +89,21 @@ describe("EventCard", () => {
     });
   });
 
+  it("hides Edit and Delete buttons when the user is not the owner", () => {
+    render(<EventCard event={mockEvent} isOwner={false} />);
+
+    expect(screen.getByText("Championship Game")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^delete$/i })).not.toBeInTheDocument();
+  });
+
   it("keeps the dialog open and shows an error toast when deletion fails", async () => {
     const user = userEvent.setup();
     mockDeleteEvent.mockResolvedValue({
       data: null,
       error: "Delete failed",
     });
-    render(<EventCard event={mockEvent} />);
+    render(<EventCard event={mockEvent} isOwner={true} />);
 
     await user.click(screen.getByRole("button", { name: /^delete$/i }));
     const dialog = (await screen.findByText("Delete event")).closest(

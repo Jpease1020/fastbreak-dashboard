@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { SearchFilterBar } from "@/components/events/search-filter-bar";
 import { EventCard } from "@/components/events/event-card";
 import { getEvents } from "@/lib/actions/events";
+import { createClient } from "@/lib/supabase/server";
 
 export default async function DashboardPage({
   searchParams,
@@ -17,7 +18,13 @@ export default async function DashboardPage({
   const search = params.search;
   const sport = params.sport;
 
-  const result = await getEvents(search, sport);
+  const [result, supabase] = await Promise.all([
+    getEvents(search, sport),
+    createClient(),
+  ]);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   return (
     <div className="space-y-8">
@@ -76,7 +83,11 @@ export default async function DashboardPage({
       ) : (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {result.data.map((event) => (
-            <EventCard key={event.id} event={event} />
+            <EventCard
+              key={event.id}
+              event={event}
+              isOwner={event.user_id === user?.id}
+            />
           ))}
         </div>
       )}
